@@ -1,0 +1,58 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Publish build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build_artifacts
+        path: ./dist
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build, test]  # Make sure Build and Test stages are completed before deploying
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.2
+      with:
+        branch: gh-pages  # The branch to deploy to
+        folder: dist      # The folder containing the built artifacts (change if needed)
+
+
